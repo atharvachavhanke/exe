@@ -152,7 +152,7 @@
   .video-intro-cta.show { opacity: 1; pointer-events: auto; transform: translateX(-50%) translateY(0); }
   .video-intro-cta:hover { background: #B8935A; }
   .video-intro-mute {
-    position: absolute; bottom: 3.4rem; right: 5%; z-index: 3;
+    position: absolute; top: 2rem; right: 5%; z-index: 3;
     width: 44px; height: 44px; border-radius: 50%;
     background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.32);
     display: flex; align-items: center; justify-content: center; cursor: pointer;
@@ -160,6 +160,16 @@
   }
   .video-intro-mute.show { opacity: 1; pointer-events: auto; }
   .video-intro-mute:hover { background: rgba(255,255,255,0.2); }
+  .video-intro-skip {
+    position: absolute; bottom: 3.25rem; right: 5%; z-index: 3;
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.3);
+    color: rgba(255,255,255,0.9); font-size: 0.8rem; font-weight: 600;
+    padding: 0.65rem 1.2rem; border-radius: 100px; cursor: pointer;
+    opacity: 0; pointer-events: none; transition: opacity 0.4s ease, background 0.2s ease;
+  }
+  .video-intro-skip.show { opacity: 1; pointer-events: auto; }
+  .video-intro-skip:hover { background: rgba(255,255,255,0.16); }
   .video-intro-mute .icon { width: 18px; height: 18px; }
   .replay-intro-btn {
     display: inline-flex; align-items: center; gap: 0.4rem;
@@ -173,7 +183,12 @@
     .video-intro-start-icon { width: 60px; height: 60px; }
     .video-intro-start-icon .icon { width: 22px; height: 22px; }
     .video-intro-cta { font-size: 0.85rem; padding: 0.8rem 1.5rem; }
-    .video-intro-mute { width: 38px; height: 38px; bottom: 3rem; }
+    .video-intro-mute { width: 38px; height: 38px; top: 1.5rem; }
+    .video-intro-skip { font-size: 0.72rem; padding: 0.55rem 1rem; bottom: 3rem; }
+    .video-intro video { object-fit: contain; }
+  }
+  @media (max-height: 500px) and (orientation: landscape) {
+    .video-intro video { object-fit: contain; }
   }
 
   .nav-logo {
@@ -292,7 +307,16 @@
     .hero-photo-bg { opacity: 0.28; }
   }
   @media (max-width: 600px) {
-    .hero-photo-bg { display: none; }
+    .hero-photo-bg {
+      display: block;
+      background-image: url('hero-bg-mobile.jpg');
+      background-size: cover;
+      background-position: center top;
+      opacity: 0.85;
+    }
+    .hero-photo-bg::after {
+      background: rgba(250,250,248,0.55);
+    }
   }
 
   .hero-content { position: relative; z-index: 1; max-width: 800px; }
@@ -1172,6 +1196,7 @@
     <p>Tap to Begin</p>
   </div>
   <button class="video-intro-mute" id="introMute" aria-label="Toggle sound"><svg class="icon"><use href="#i-volume"/></svg></button>
+  <button class="video-intro-skip" id="introSkip">Skip →</button>
   <button class="video-intro-cta" id="introCta">Explore All Information</button>
 </div>
 
@@ -2266,10 +2291,10 @@
   const startPrompt = document.getElementById('introStart');
   const cta = document.getElementById('introCta');
   const muteBtn = document.getElementById('introMute');
+  const skipBtn = document.getElementById('introSkip');
   const nav = document.getElementById('mainNav');
   if (!intro) return;
 
-  const SEEN_KEY = 'nivx_intro_seen';
   let started = false;
 
   function lockScroll() { document.body.style.overflow = 'hidden'; }
@@ -2279,6 +2304,8 @@
     if (started) return;
     started = true;
     startPrompt.classList.add('hide');
+    muteBtn.classList.add('show');
+    skipBtn.classList.add('show');
     vid1.currentTime = 0;
     vid1.muted = false;
     const p = vid1.play();
@@ -2286,7 +2313,6 @@
       p.catch(() => {
         vid1.muted = true;
         vid1.play().catch(() => {});
-        muteBtn.classList.add('show');
       });
     }
   }
@@ -2298,6 +2324,7 @@
     startPrompt.classList.remove('hide');
     cta.classList.remove('show');
     muteBtn.classList.remove('show');
+    skipBtn.classList.remove('show');
   }
 
   function hideIntroUI() {
@@ -2331,26 +2358,23 @@
     vid2.classList.add('active');
     vid2.currentTime = 0;
     vid2.muted = vid1.muted;
-    vid2.play().catch(() => { muteBtn.classList.add('show'); });
+    vid2.play().catch(() => {});
   });
   vid2.addEventListener('ended', () => {
     cta.classList.add('show');
+    skipBtn.classList.remove('show');
   });
 
   cta.addEventListener('click', () => {
-    localStorage.setItem(SEEN_KEY, '1');
+    hideIntroUI();
+  });
+  skipBtn.addEventListener('click', () => {
     hideIntroUI();
   });
 
-  // Show automatically only on a visitor's first visit; skip entirely after that
-  if (localStorage.getItem(SEEN_KEY)) {
-    intro.classList.add('hidden');
-    intro.style.display = 'none';
-    nav.classList.remove('intro-hidden');
-  } else {
-    resetIntroState();
-    lockScroll();
-  }
+  // Show every time the site is visited/reloaded
+  resetIntroState();
+  lockScroll();
 
   window.replayIntro = function() { showIntroUI(); };
 })();
