@@ -284,7 +284,7 @@
 
   .hero-photo-bg {
     position: absolute; inset: 0; z-index: 0;
-    background-image: url('hero-bg.jpg');
+    background-image: url('hero-bg.jpg'), url('hero-bg.png'), url('hero-bg.webp'); /* LAPTOP/DESKTOP background: replace the file hero-bg.jpg */
     background-size: cover; background-position: center right;
     opacity: 0.55;
   }
@@ -309,7 +309,8 @@
   @media (max-width: 600px) {
     .hero-photo-bg {
       display: block;
-      background-image: url('hero-bg-mobile.jpg'), url('hero-bg.jpg');
+      /* MOBILE background: replace the file hero-bg-mobile.jpg (first match wins) */
+      background-image: url('hero-bg-mobile.jpg'), url('hero-bg-mobile.jpeg'), url('hero-bg-mobile.png'), url('hero-bg-mobile.webp'), url('hero-bg.jpeg'), url('hero-bg.jpg');
       background-size: cover;
       background-position: center top;
       opacity: 1;
