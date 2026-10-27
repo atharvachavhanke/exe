@@ -284,7 +284,7 @@
 
   .hero-photo-bg {
     position: absolute; inset: 0; z-index: 0;
-    background-image: url('hero-bg.jpg'), url('hero-bg.png'), url('hero-bg.webp'); /* LAPTOP/DESKTOP background: replace the file hero-bg.jpg */
+    /* image is chosen by the HERO BACKGROUND script near the bottom of this file */
     background-size: cover; background-position: center right;
     opacity: 0.55;
   }
@@ -309,8 +309,7 @@
   @media (max-width: 600px) {
     .hero-photo-bg {
       display: block;
-      /* MOBILE background: replace the file hero-bg-mobile.jpg (first match wins) */
-      background-image: url('hero-bg-mobile.jpg'), url('hero-bg-mobile.jpeg'), url('hero-bg-mobile.png'), url('hero-bg-mobile.webp'), url('hero-bg.jpeg'), url('hero-bg.jpg');
+      /* phone image is chosen by the HERO BACKGROUND script near the bottom of this file */
       background-size: cover;
       background-position: center top;
       opacity: 1;
@@ -2378,6 +2377,37 @@
   lockScroll();
 
   window.replayIntro = function() { showIntroUI(); };
+})();
+
+// ═══════════════════════════════════════════════════════════════
+// HERO BACKGROUND  — to change the hero picture, upload a new JPEG with the SAME name:
+//   laptop / desktop / tablet  ->  hero-desktop.jpeg
+//   phones (600px wide or less) ->  hero-mobile.jpeg
+// The page loads only the first file it finds in each list below.
+// ═══════════════════════════════════════════════════════════════
+(function() {
+  const el = document.querySelector('.hero-photo-bg');
+  if (!el) return;
+  const LISTS = {
+    desktop: ['hero-desktop.jpeg', 'hero-desktop.jpg', 'hero-bg.jpg'],
+    mobile:  ['hero-mobile.jpeg', 'hero-mobile.jpg', 'hero-bg-mobile.jpg', 'hero-bg.jpeg',
+              'hero-desktop.jpeg', 'hero-desktop.jpg', 'hero-bg.jpg']
+  };
+  const mq = window.matchMedia('(max-width: 600px)');
+  let token = 0;
+  function pick() {
+    const mine = ++token;
+    const list = mq.matches ? LISTS.mobile : LISTS.desktop;
+    (function tryNext(i) {
+      if (i >= list.length || mine !== token) return;
+      const img = new Image();
+      img.onload = function() { if (mine === token) el.style.backgroundImage = "url('" + list[i] + "')"; };
+      img.onerror = function() { tryNext(i + 1); };
+      img.src = list[i];
+    })(0);
+  }
+  pick();
+  if (mq.addEventListener) mq.addEventListener('change', pick); else mq.addListener(pick);
 })();
 
 // ─── NAVIGATION ───
